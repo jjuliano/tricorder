@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+require 'thor'
+require_relative '../lib/tricorder'
+
+module Tricorder
+  class CLI < Thor
+    include Tricorder
+
+    map ["-v", "--version"] => :version
+    desc "--version, -v", "Display Tricorder version"
+    def version
+      puts Tricorder::VERSION::STRING
+    end
+
+    option :database, type: :array, desc: 'Specify the database to be searched'
+    option :disable_logging, type: :boolean, desc: 'Disable Logging'
+    option :api_key, type: :string, desc: 'API key to be used'
+    option :result_number, type: :numeric, desc: 'Choose a result number'
+    option :print_only_once, type: :boolean, desc: 'Disable printing multiple info results'
+    option :print_info, type: :array, desc: 'Print info scope. i.e. --print-info=characterSpecies name'
+    option :print_details, type: :boolean, desc: 'Print all the details of each queried info'
+
+    desc 'search <keyword>', 'Perform search in Star Trek API on all databases'
+    def search(keyword)
+      locations = if options[:database]
+        options[:database].map(&:to_sym)
+      else
+        Tricorders::TRICORDERS
+      end
+
+      command = "set_subject('#{keyword}')"
+      command += ".no_logging" if options[:disable_logging]
+      command += ".api_key('#{options[:api_key]}')" if options[:api_key]
+      command += ".print_only_once" if options[:print_only_once]
+      command += ".search_locations(#{locations})"
+      command += ".get_result_number(#{options[:result_number]})" if options[:result_number]
+      command += ".print_all_results" unless options[:result_number] || options[:print_only_once]
+      command += ".print_result" if options[:result_number] && !options[:print_only_once]
+      command += ".print_info(#{options[:print_info]})" if options[:print_info]
+      command += ".print_all_info" if options[:print_details]
+
+      tricorder do
+        eval command
+      end
+    end
+  end
+end
+
+Tricorder::CLI.start(ARGV)
