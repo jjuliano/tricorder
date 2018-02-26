@@ -41,6 +41,20 @@ $ tricorder search Uhura --database character --print-only-once --print-info=cha
 Human
 ```
 
+To use a plugin use the `--preprocessor`
+
+```
+$ tricorder search Uhura --disable-logging --database character --print-only-once --print-info=characterSpecies name --preprocessor name2klingon printobject scope2klingon --format raw
+0xF8DB 0xF8E8 0xF8DD 0xF8E3 0xF8D0  0xF8E5 0xF8D6 0xF8E5 0xF8E1 0xF8D0
+Human
+0xF8D6 0xF8E5 0xF8DA 0xF8D0 0xF8DB
+```
+
+To set the format output, use the `--format` command, available formats are `plain`, `raw`, `json` and `html`
+```
+tricorder search Uhura --database character --format html
+```
+
 ## Domain Specific Language
 Here's an example of using tricorder programmatically via it's own DSL syntax,
 

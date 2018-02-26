@@ -1,4 +1,5 @@
 require_relative 'tricorders'
+require_relative 'plugins'
 
 module BaseOperators
   include Tricorders
@@ -41,6 +42,12 @@ module BaseOperators
 
     def no_logging
       @verbose = false
+      self
+    end
+
+    def preprocessor(*preprocessors)
+      @preprocessors = preprocessors.flatten
+
       self
     end
 
@@ -141,6 +148,19 @@ module BaseOperators
       end
     end
 
+    def set_format(type)
+      formats = [:raw, :plain, :json, :html]
+
+      if formats.include?(type.to_sym)
+        @format = type.to_sym
+      else
+        ap "Invalid format #{@format}. Valid formats are #{formats.join(', ')}"
+        @error = true
+      end
+
+      self
+    end
+
     def search
       exit(0) if @error
 
@@ -192,10 +212,18 @@ module BaseOperators
 
       init_error_messages
 
+      @object = object
+
       if object.empty?
-        "No info found!"
+        ap "No info found!"
       else
-        object
+        if @preprocessors
+          @preprocessors.each do |preprocessor|
+            self.send(preprocessor.to_sym) unless self.instance_variable_get("@#{preprocessor}".to_sym)
+          end
+        else
+          print_object
+        end
       end
     end
 
@@ -208,7 +236,7 @@ module BaseOperators
 
         fetch_info
         begin
-          info = printer(@info[@tricorder.to_s])
+          info = @info[@tricorder.to_s]
 
           print_info = if field
             info[collection][num][field]
@@ -222,7 +250,7 @@ module BaseOperators
             @out = print_info
           end
 
-          log(@out, {pager: :puts, verbose: true}) unless @printed
+          printer(@out) unless @printed
 
           @printed = true if @print_only_once
         rescue
@@ -239,20 +267,20 @@ module BaseOperators
         set_uid(result['uid'])
 
         fetch_info
-        ap printer(@info)
+        printer(@info)
       end
 
       self
     end
 
     def print_result
-      ap printer(@result)
+      printer(@result)
 
       self
     end
 
     def print_all_results
-      ap printer(@results)
+      printer(@results)
 
       self
     end

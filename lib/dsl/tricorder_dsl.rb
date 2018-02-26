@@ -14,6 +14,8 @@ class TricorderDSL < BaseOperators::BaseDSLOperators
     @storedir = '/tmp'
     @tricorder = nil
     @info = {}
+    @format = :plain
+    @output = []
   end
 
   def method_missing(method, *args)
