@@ -1,6 +1,6 @@
 require_relative '../../tricorder'
 require_relative '../../tricorder_dsl'
-require_relative 'pIqaD​_alphabet'
+require_relative 'pIqaD_alphabet'
 
 module Name2Klingon
   include PiqadAlphabet
